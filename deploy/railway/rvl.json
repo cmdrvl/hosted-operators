@@ -1,0 +1,22 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "/deploy/railway/rvl.Dockerfile",
+    "watchPatterns": [
+      "/Cargo.toml",
+      "/Cargo.lock",
+      "/.dockerignore",
+      "/crates/host-core/**",
+      "/crates/host-rvl/**",
+      "/deploy/railway/rvl.Dockerfile",
+      "/deploy/railway/rvl.json"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

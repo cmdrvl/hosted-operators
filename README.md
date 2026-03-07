@@ -81,3 +81,14 @@ Build any hosted binary with the shared Dockerfile:
 docker build --build-arg BIN_PACKAGE=host-rvl -t host-rvl .
 docker build --build-arg BIN_PACKAGE=host-shape -t host-shape .
 ```
+
+## Railway
+
+This repo now includes service-specific Railway deployment files under [`deploy/railway/README.md`](deploy/railway/README.md).
+
+Recommended setup:
+
+- Railway service `rvl` -> config file `/deploy/railway/rvl.json`
+- Railway service `shape` -> config file `/deploy/railway/shape.json`
+
+Those configs use service-specific Dockerfiles so each service builds the correct binary without relying on a dashboard-only build arg.
