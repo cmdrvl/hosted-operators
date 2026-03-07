@@ -1,0 +1,14 @@
+[package]
+name = "host-shape"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+host-core = { path = "../host-core" }
+serde.workspace = true
+shape = { git = "https://github.com/cmdrvl/shape.git", tag = "v0.4.1" }
+tokio.workspace = true

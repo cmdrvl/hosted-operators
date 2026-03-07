@@ -1,0 +1,184 @@
+{
+  "$id": "https://rvl.v0/schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "JSON schema for rvl.v0 output format",
+  "properties": {
+    "alignment": {
+      "properties": {
+        "key_column": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "key",
+            "row_order"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "type": "object"
+    },
+    "contributors": {
+      "items": {
+        "properties": {
+          "column": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "number"
+          },
+          "cumulative_share": {
+            "type": "number"
+          },
+          "delta": {
+            "type": "number"
+          },
+          "new": {
+            "type": "number"
+          },
+          "old": {
+            "type": "number"
+          },
+          "row_id": {
+            "type": "string"
+          },
+          "share": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "row_id",
+          "column",
+          "old",
+          "new",
+          "delta",
+          "contribution",
+          "share",
+          "cumulative_share"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "counts": {
+      "type": "object"
+    },
+    "dialect": {
+      "properties": {
+        "new": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "old": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "files": {
+      "properties": {
+        "new": {
+          "type": "string"
+        },
+        "old": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "old",
+        "new"
+      ],
+      "type": "object"
+    },
+    "limits": {
+      "properties": {
+        "max_contributors": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_contributors"
+      ],
+      "type": "object"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "outcome": {
+      "enum": [
+        "REAL_CHANGE",
+        "NO_REAL_CHANGE",
+        "REFUSAL"
+      ],
+      "type": "string"
+    },
+    "profile_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refusal": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "detail": {},
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "detail"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "threshold": {
+      "type": "number"
+    },
+    "tolerance": {
+      "type": "number"
+    },
+    "version": {
+      "const": "rvl.v0",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "outcome",
+    "files",
+    "alignment",
+    "dialect",
+    "threshold",
+    "tolerance",
+    "counts",
+    "metrics",
+    "limits",
+    "contributors"
+  ],
+  "title": "rvl Output Schema",
+  "type": "object"
+}

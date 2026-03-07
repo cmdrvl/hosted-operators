@@ -1,0 +1,174 @@
+{
+  "schema_version": "operator.v0",
+  "name": "shape",
+  "version": "0.4.1",
+  "description": "Structural comparability gate -- deterministically answers whether two CSV datasets can be compared",
+  "repository": "https://github.com/cmdrvl/shape",
+  "license": "MIT",
+  "agent_guide": "https://github.com/cmdrvl/.github/blob/main/profile/AGENT_PROMPT.md",
+  "invocation": {
+    "binary": "shape",
+    "usage": [
+      "shape <old.csv> <new.csv> [OPTIONS]",
+      "shape witness <query|last|count> [OPTIONS]"
+    ],
+    "output_mode": "report",
+    "output_schema": "shape.v0",
+    "json_flag": "--json"
+  },
+  "arguments": [
+    {
+      "name": "old",
+      "type": "file_path",
+      "required": true,
+      "position": 0,
+      "description": "Old CSV file (required for compare mode)"
+    },
+    {
+      "name": "new",
+      "type": "file_path",
+      "required": true,
+      "position": 1,
+      "description": "New CSV file (required for compare mode)"
+    }
+  ],
+  "options": [
+    {
+      "name": "key",
+      "flag": "--key",
+      "type": "string",
+      "description": "Key column for alignment check"
+    },
+    {
+      "name": "delimiter",
+      "flag": "--delimiter",
+      "type": "string",
+      "description": "Force CSV delimiter for both files"
+    },
+    {
+      "name": "no_witness",
+      "flag": "--no-witness",
+      "type": "flag",
+      "description": "Suppress ambient witness ledger recording for this compare run"
+    },
+    {
+      "name": "capsule_dir",
+      "flag": "--capsule-dir",
+      "type": "file_path",
+      "description": "Write deterministic repro capsule artifacts to this directory (default off)"
+    },
+    {
+      "name": "profile",
+      "flag": "--profile",
+      "type": "file_path",
+      "description": "Reserved in v0; parsed but check scoping is deferred"
+    },
+    {
+      "name": "profile_id",
+      "flag": "--profile-id",
+      "type": "string",
+      "description": "Reserved in v0; parsed and echoed in JSON profile_id"
+    },
+    {
+      "name": "lock",
+      "flag": "--lock",
+      "type": "file_path",
+      "repeatable": true,
+      "description": "Reserved in v0; lock verification is deferred"
+    },
+    {
+      "name": "max_rows",
+      "flag": "--max-rows",
+      "type": "integer",
+      "description": "Reserved in v0; row-limit refusal is deferred"
+    },
+    {
+      "name": "max_bytes",
+      "flag": "--max-bytes",
+      "type": "integer",
+      "description": "Reserved in v0; byte-limit refusal is deferred"
+    },
+    {
+      "name": "explicit",
+      "flag": "--explicit",
+      "type": "flag",
+      "description": "Show column names and other identifying metadata in output (default: redacted for zero-retention safety)"
+    },
+    {
+      "name": "schema",
+      "flag": "--schema",
+      "type": "flag",
+      "description": "Print JSON Schema for shape.v0 output format and exit 0"
+    },
+    {
+      "name": "describe",
+      "flag": "--describe",
+      "type": "flag",
+      "description": "Print compiled operator.json and exit 0 without positional args"
+    }
+  ],
+  "exit_codes": {
+    "0": {
+      "meaning": "COMPATIBLE",
+      "domain": "positive"
+    },
+    "1": {
+      "meaning": "INCOMPATIBLE",
+      "domain": "negative"
+    },
+    "2": {
+      "meaning": "REFUSAL / CLI error / witness internal error",
+      "domain": "error"
+    }
+  },
+  "refusals": [
+    {
+      "code": "E_IO",
+      "message": "Cannot read input file",
+      "action": "escalate"
+    },
+    {
+      "code": "E_ENCODING",
+      "message": "Unsupported encoding (UTF-16/32 BOM or NUL bytes)",
+      "action": "escalate"
+    },
+    {
+      "code": "E_CSV_PARSE",
+      "message": "CSV parse failure",
+      "action": "escalate"
+    },
+    {
+      "code": "E_EMPTY",
+      "message": "One or both files are empty",
+      "action": "escalate"
+    },
+    {
+      "code": "E_HEADERS",
+      "message": "Missing header or duplicate headers",
+      "action": "escalate"
+    },
+    {
+      "code": "E_DIALECT",
+      "message": "Delimiter ambiguous or undetectable",
+      "action": "retry_with_flag",
+      "flag": "--delimiter",
+      "value_source": null
+    }
+  ],
+  "capabilities": {
+    "formats": [
+      "csv"
+    ],
+    "profile_aware": false,
+    "streaming": false
+  },
+  "pipeline": {
+    "upstream": [],
+    "downstream": [
+      "rvl",
+      "compare",
+      "verify",
+      "assess"
+    ]
+  }
+}

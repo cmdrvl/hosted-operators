@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "JSON output schema for shape structural comparability gate",
+  "properties": {
+    "checks": {
+      "properties": {
+        "key_viability": {
+          "properties": {
+            "coverage": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "found_new": {
+              "type": "boolean"
+            },
+            "found_old": {
+              "type": "boolean"
+            },
+            "key_column": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail"
+              ],
+              "type": "string"
+            },
+            "unique_new": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "unique_old": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "row_granularity": {
+          "properties": {
+            "key_overlap": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "keys_new_only": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "keys_old_only": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "rows_new": {
+              "type": "integer"
+            },
+            "rows_old": {
+              "type": "integer"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "schema_overlap": {
+          "properties": {
+            "columns_common": {
+              "type": "integer"
+            },
+            "columns_new_only": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "columns_old_only": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "overlap_ratio": {
+              "type": "number"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail"
+              ],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "type_consistency": {
+          "properties": {
+            "numeric_columns": {
+              "type": "integer"
+            },
+            "status": {
+              "enum": [
+                "pass",
+                "fail"
+              ],
+              "type": "string"
+            },
+            "type_shifts": {
+              "items": {
+                "properties": {
+                  "column": {
+                    "type": "string"
+                  },
+                  "new_type": {
+                    "type": "string"
+                  },
+                  "old_type": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "dialect": {
+      "properties": {
+        "new": {
+          "properties": {
+            "delimiter": {
+              "type": "string"
+            },
+            "escape": {
+              "type": "string"
+            },
+            "quote": {
+              "type": "string"
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "old": {
+          "properties": {
+            "delimiter": {
+              "type": "string"
+            },
+            "escape": {
+              "type": "string"
+            },
+            "quote": {
+              "type": "string"
+            }
+          },
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "files": {
+      "properties": {
+        "new": {
+          "type": "string"
+        },
+        "old": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "old",
+        "new"
+      ],
+      "type": "object"
+    },
+    "input_verification": {},
+    "outcome": {
+      "enum": [
+        "COMPATIBLE",
+        "INCOMPATIBLE",
+        "REFUSAL"
+      ],
+      "type": "string"
+    },
+    "profile_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "profile_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "refusal": {
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        },
+        "next_command": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "version": {
+      "const": "shape.v0",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "outcome",
+    "files",
+    "dialect"
+  ],
+  "title": "shape.v0",
+  "type": "object"
+}

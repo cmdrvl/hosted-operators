@@ -1,0 +1,244 @@
+{
+  "schema_version": "operator.v0",
+  "name": "rvl",
+  "version": "0.5.1",
+  "description": "Numeric change explainer -- finds the smallest set of cell-level changes that account for the difference between two CSV files",
+  "repository": "https://github.com/cmdrvl/rvl",
+  "license": "MIT",
+  "agent_guide": "https://github.com/cmdrvl/.github/blob/main/profile/AGENT_PROMPT.md",
+  "invocation": {
+    "binary": "rvl",
+    "usage": [
+      "rvl <old.csv> <new.csv> [OPTIONS]",
+      "rvl witness <query|last|count> [OPTIONS]"
+    ],
+    "output_mode": "report",
+    "output_schema": "rvl.v0",
+    "json_flag": "--json"
+  },
+  "arguments": [
+    {
+      "name": "old",
+      "type": "file_path",
+      "required": true,
+      "position": 0,
+      "description": "Old CSV file"
+    },
+    {
+      "name": "new",
+      "type": "file_path",
+      "required": true,
+      "position": 1,
+      "description": "New CSV file"
+    }
+  ],
+  "options": [
+    {
+      "name": "key",
+      "flag": "--key",
+      "type": "string",
+      "description": "Align rows by this key column (otherwise align by row order)"
+    },
+    {
+      "name": "threshold",
+      "flag": "--threshold",
+      "type": "float",
+      "default": 0.95,
+      "description": "Coverage target: 0 < x <= 1"
+    },
+    {
+      "name": "tolerance",
+      "flag": "--tolerance",
+      "type": "float",
+      "default": 1e-9,
+      "description": "Per-cell noise floor: x >= 0"
+    },
+    {
+      "name": "delimiter",
+      "flag": "--delimiter",
+      "type": "string",
+      "description": "Force CSV delimiter (comma/tab/semicolon/pipe/caret, 0xNN, or single ASCII byte)"
+    },
+    {
+      "name": "profile",
+      "flag": "--profile",
+      "type": "file_path",
+      "description": "Use profile YAML at this path for key derivation and column scoping"
+    },
+    {
+      "name": "profile_id",
+      "flag": "--profile-id",
+      "type": "string",
+      "description": "Resolve profile by ID from ~/.epistemic/profiles/*.yaml (or direct path)"
+    },
+    {
+      "name": "capsule_out",
+      "flag": "--capsule-out",
+      "type": "directory_path",
+      "description": "Write deterministic repro capsule artifacts to this directory (default: disabled)"
+    },
+    {
+      "name": "json",
+      "flag": "--json",
+      "type": "flag",
+      "description": "Emit JSON output (single object)"
+    },
+    {
+      "name": "no_witness",
+      "flag": "--no-witness",
+      "type": "flag",
+      "description": "Suppress witness ledger recording"
+    },
+    {
+      "name": "explicit",
+      "flag": "--explicit",
+      "type": "flag",
+      "description": "Show raw data values in output (default: redacted for zero-retention safety)"
+    },
+    {
+      "name": "describe",
+      "flag": "--describe",
+      "type": "flag",
+      "description": "Print compiled operator.json and exit 0 without positional args"
+    },
+    {
+      "name": "schema",
+      "flag": "--schema",
+      "type": "flag",
+      "description": "Print JSON Schema for rvl.v0 output format and exit 0"
+    },
+    {
+      "name": "version",
+      "flag": "--version",
+      "type": "flag",
+      "description": "Print version and exit 0"
+    }
+  ],
+  "exit_codes": {
+    "0": {
+      "meaning": "NO_REAL_CHANGE",
+      "domain": "positive"
+    },
+    "1": {
+      "meaning": "REAL_CHANGE",
+      "domain": "negative"
+    },
+    "2": {
+      "meaning": "REFUSAL / CLI error",
+      "domain": "error"
+    }
+  },
+  "refusals": [
+    {
+      "code": "E_IO",
+      "message": "Cannot read input file",
+      "action": "escalate"
+    },
+    {
+      "code": "E_ENCODING",
+      "message": "Unsupported text encoding (UTF-16/32 BOM or NUL bytes)",
+      "action": "escalate"
+    },
+    {
+      "code": "E_CSV_PARSE",
+      "message": "CSV parse failure",
+      "action": "escalate"
+    },
+    {
+      "code": "E_HEADERS",
+      "message": "Invalid or duplicate headers",
+      "action": "escalate"
+    },
+    {
+      "code": "E_NO_KEY",
+      "message": "Key column missing from file",
+      "action": "retry_with_flag",
+      "flag": "--key"
+    },
+    {
+      "code": "E_KEY_EMPTY",
+      "message": "Empty key value in row",
+      "action": "escalate"
+    },
+    {
+      "code": "E_KEY_DUP",
+      "message": "Duplicate key values (non-unique)",
+      "action": "escalate"
+    },
+    {
+      "code": "E_KEY_MISMATCH",
+      "message": "Key sets differ between files",
+      "action": "escalate"
+    },
+    {
+      "code": "E_ROWCOUNT",
+      "message": "Row count mismatch and no key provided",
+      "action": "retry_with_flag",
+      "flag": "--key"
+    },
+    {
+      "code": "E_NEED_KEY",
+      "message": "Cannot deterministically align without a key",
+      "action": "retry_with_flag",
+      "flag": "--key"
+    },
+    {
+      "code": "E_DIALECT",
+      "message": "Delimiter ambiguous or undetectable",
+      "action": "retry_with_flag",
+      "flag": "--delimiter"
+    },
+    {
+      "code": "E_AMBIGUOUS_PROFILE",
+      "message": "Both --profile and --profile-id were provided",
+      "action": "adjust_input"
+    },
+    {
+      "code": "E_PROFILE_NOT_FOUND",
+      "message": "Profile could not be resolved from ID",
+      "action": "escalate"
+    },
+    {
+      "code": "E_KEY_CONFLICT",
+      "message": "--key flag conflicts with profile-defined key",
+      "action": "adjust_input"
+    },
+    {
+      "code": "E_MIXED_TYPES",
+      "message": "Mixed numeric and non-numeric values in column",
+      "action": "escalate"
+    },
+    {
+      "code": "E_NO_NUMERIC",
+      "message": "No numeric columns in common",
+      "action": "escalate"
+    },
+    {
+      "code": "E_MISSINGNESS",
+      "message": "Numeric-vs-missing mismatch",
+      "action": "escalate"
+    },
+    {
+      "code": "E_DIFFUSE",
+      "message": "Diffuse change below coverage threshold",
+      "action": "retry_with_flag",
+      "flag": "--threshold"
+    }
+  ],
+  "capabilities": {
+    "formats": [
+      "csv"
+    ],
+    "profile_aware": true,
+    "streaming": false
+  },
+  "pipeline": {
+    "upstream": [
+      "shape",
+      "profile"
+    ],
+    "downstream": [
+      "pack"
+    ]
+  }
+}
