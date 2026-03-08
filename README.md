@@ -92,3 +92,16 @@ Recommended setup:
 - Railway service `shape` -> config file `/deploy/railway/shape.json`
 
 Those configs use service-specific Dockerfiles so each service builds the correct binary without relying on a dashboard-only build arg.
+
+## AWS
+
+This repo also includes a cheap single-host AWS deployment path under [`deploy/aws/README.md`](deploy/aws/README.md).
+
+Recommended setup:
+
+- one Lightsail instance
+- one static IP
+- `rvl.cmdrvl.com`
+- `shape.cmdrvl.com`
+
+That path is designed to replace Railway as the operator origin while keeping Kovrex pointed at stable public HTTPS APIs.

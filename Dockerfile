@@ -11,6 +11,8 @@ RUN cargo build --release -p ${BIN_PACKAGE}
 
 FROM alpine:3.19
 
+ARG BIN_PACKAGE
+
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /app/target/release/${BIN_PACKAGE} /usr/local/bin/app

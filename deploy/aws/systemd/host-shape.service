@@ -1,0 +1,23 @@
+[Unit]
+Description=CMD+RVL hosted shape operator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cmdrvl
+Group=cmdrvl
+WorkingDirectory=/opt/cmdrvl
+EnvironmentFile=/etc/cmdrvl/host-shape.env
+ExecStart=/opt/cmdrvl/bin/host-shape
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/tmp /var/lib/cmdrvl
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
