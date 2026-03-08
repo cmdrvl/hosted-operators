@@ -57,4 +57,4 @@ Do not set `CMDRVL_HOST_PORT`; Railway injects `PORT`, and the runtime already f
 2. Deploy `rvl` from this repo.
 3. Verify `/health`, `/describe`, `/schema/output`, and `/v1/run` on the new `rvl` service.
 4. Move the existing Kovrex/operator URL or Railway domain to the new `rvl` service.
-5. Retire `rvl-kovrex` once traffic is confirmed on the shared repo deployment.
+5. Archive `rvl-kovrex` after traffic is confirmed on the shared deployment or AWS replacement.
