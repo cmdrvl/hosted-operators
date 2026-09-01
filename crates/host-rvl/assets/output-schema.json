@@ -11,6 +11,12 @@
             "null"
           ]
         },
+        "key_columns": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "mode": {
           "enum": [
             "key",
@@ -20,7 +26,28 @@
         }
       },
       "required": [
-        "mode"
+        "mode",
+        "key_column",
+        "key_columns"
+      ],
+      "type": "object"
+    },
+    "audit": {
+      "properties": {
+        "field_changes_emitted": {
+          "type": "integer"
+        },
+        "numeric_changes_emitted": {
+          "type": "integer"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "numeric_changes_emitted",
+        "field_changes_emitted",
+        "truncated"
       ],
       "type": "object"
     },
@@ -48,6 +75,13 @@
           "row_id": {
             "type": "string"
           },
+          "row_key": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
           "share": {
             "type": "number"
           }
@@ -55,10 +89,6 @@
         "required": [
           "row_id",
           "column",
-          "old",
-          "new",
-          "delta",
-          "contribution",
           "share",
           "cumulative_share"
         ],
@@ -85,6 +115,37 @@
         }
       },
       "type": "object"
+    },
+    "field_changes": {
+      "items": {
+        "properties": {
+          "column": {
+            "type": "string"
+          },
+          "new": {
+            "type": "string"
+          },
+          "old": {
+            "type": "string"
+          },
+          "row_id": {
+            "type": "string"
+          },
+          "row_key": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "row_id",
+          "column"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "files": {
       "properties": {
@@ -114,6 +175,12 @@
     },
     "metrics": {
       "type": "object"
+    },
+    "mode": {
+      "enum": [
+        "exhaustive_numeric"
+      ],
+      "type": "string"
     },
     "outcome": {
       "enum": [
