@@ -7,111 +7,59 @@
   "license": "MIT",
   "agent_guide": "https://github.com/cmdrvl/.github/blob/main/profile/AGENT_PROMPT.md",
   "invocation": {
-    "binary": "rvl",
+    "binary": "host-rvl",
     "usage": [
-      "rvl <old.csv> <new.csv> [OPTIONS]",
-      "rvl witness <query|last|count> [OPTIONS]"
+      "POST /v1/run"
     ],
-    "output_mode": "report",
-    "output_schema": "rvl.v0",
-    "json_flag": "--json"
+    "output_mode": "json",
+    "output_schema": "rvl.v0"
   },
   "arguments": [
     {
       "name": "old",
-      "type": "file_path",
+      "type": "file_input",
       "required": true,
-      "position": 0,
-      "description": "Old CSV file"
+      "description": "Old CSV as an inline_base64 or kovrex_file artifact"
     },
     {
       "name": "new",
-      "type": "file_path",
+      "type": "file_input",
       "required": true,
-      "position": 1,
-      "description": "New CSV file"
+      "description": "New CSV as an inline_base64 or kovrex_file artifact"
     }
   ],
   "options": [
     {
       "name": "key",
-      "flag": "--key",
       "type": "string",
       "description": "Align rows by this key column (otherwise align by row order)"
     },
     {
       "name": "threshold",
-      "flag": "--threshold",
       "type": "float",
       "default": 0.95,
       "description": "Coverage target: 0 < x <= 1"
     },
     {
       "name": "tolerance",
-      "flag": "--tolerance",
       "type": "float",
       "default": 1e-9,
       "description": "Per-cell noise floor: x >= 0"
     },
     {
       "name": "delimiter",
-      "flag": "--delimiter",
       "type": "string",
       "description": "Force CSV delimiter (comma/tab/semicolon/pipe/caret, 0xNN, or single ASCII byte)"
     },
     {
       "name": "profile",
-      "flag": "--profile",
-      "type": "file_path",
-      "description": "Use profile YAML at this path for key derivation and column scoping"
-    },
-    {
-      "name": "profile_id",
-      "flag": "--profile-id",
-      "type": "string",
-      "description": "Resolve profile by ID from ~/.epistemic/profiles/*.yaml (or direct path)"
-    },
-    {
-      "name": "capsule_out",
-      "flag": "--capsule-out",
-      "type": "directory_path",
-      "description": "Write deterministic repro capsule artifacts to this directory (default: disabled)"
-    },
-    {
-      "name": "json",
-      "flag": "--json",
-      "type": "flag",
-      "description": "Emit JSON output (single object)"
-    },
-    {
-      "name": "no_witness",
-      "flag": "--no-witness",
-      "type": "flag",
-      "description": "Suppress witness ledger recording"
+      "type": "file_input",
+      "description": "Optional profile YAML as an inline_base64 or kovrex_file artifact; host filesystem profile IDs are not accepted"
     },
     {
       "name": "explicit",
-      "flag": "--explicit",
       "type": "flag",
       "description": "Show raw data values in output (default: redacted for zero-retention safety)"
-    },
-    {
-      "name": "describe",
-      "flag": "--describe",
-      "type": "flag",
-      "description": "Print compiled operator.json and exit 0 without positional args"
-    },
-    {
-      "name": "schema",
-      "flag": "--schema",
-      "type": "flag",
-      "description": "Print JSON Schema for rvl.v0 output format and exit 0"
-    },
-    {
-      "name": "version",
-      "flag": "--version",
-      "type": "flag",
-      "description": "Print version and exit 0"
     }
   ],
   "exit_codes": {

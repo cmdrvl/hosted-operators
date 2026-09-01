@@ -578,8 +578,10 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "axum",
+ "base64",
  "host-core",
  "jsonschema",
+ "reqwest",
  "rvl",
  "serde",
  "serde_json",

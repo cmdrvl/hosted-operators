@@ -18,9 +18,12 @@ const PINNED_RVL_VERSION: &str = "0.7.1";
 struct RvlHost;
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RvlRequest {
     old: FileInput,
     new: FileInput,
+    #[serde(default)]
+    profile: Option<FileInput>,
     #[serde(default)]
     key: Option<String>,
     #[serde(default = "default_threshold")]
@@ -72,6 +75,14 @@ impl HostedTool for RvlHost {
             .new
             .materialize_tempfile(&ctx, "new", ".csv")
             .await?;
+        let profile = match request.profile {
+            Some(profile) => Some(
+                profile
+                    .materialize_tempfile(&ctx, "profile", ".yaml")
+                    .await?,
+            ),
+            None => None,
+        };
 
         let delimiter = request
             .delimiter
@@ -92,6 +103,9 @@ impl HostedTool for RvlHost {
             delimiter,
             true,
         );
+        args.profile = profile.as_ref().map(|file| PathBuf::from(file.path()));
+        args.profile_id = None;
+        args.capsule_out = None;
         args.no_witness = true;
         args.explicit = request.explicit;
 
@@ -119,13 +133,20 @@ async fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
     use std::fs;
 
+    use axum::body::to_bytes;
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+    use base64::Engine as _;
+    use base64::engine::general_purpose::STANDARD as BASE64;
     use host_core::HostedTool;
+    use host_core::{FileInput, HostConfig, RunContext};
     use serde_json::Value;
     use tempfile::TempDir;
 
-    use super::{PINNED_RVL_VERSION, RvlHost};
+    use super::{PINNED_RVL_VERSION, RvlHost, RvlRequest};
     use rvl::cli::args::Args;
 
     const PROFILE: &str =
@@ -166,6 +187,30 @@ mod tests {
         let operator: Value =
             serde_json::from_str(host.operator_json()).expect("operator manifest must be JSON");
         assert_eq!(operator["version"], PINNED_RVL_VERSION);
+        let request_fields = operator["arguments"]
+            .as_array()
+            .expect("arguments must be an array")
+            .iter()
+            .chain(
+                operator["options"]
+                    .as_array()
+                    .expect("options must be an array"),
+            )
+            .map(|field| field["name"].as_str().expect("field name"))
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            request_fields,
+            BTreeSet::from([
+                "delimiter",
+                "explicit",
+                "key",
+                "new",
+                "old",
+                "profile",
+                "threshold",
+                "tolerance",
+            ])
+        );
 
         let manifest = include_str!("../Cargo.toml");
         assert!(
@@ -232,5 +277,151 @@ mod tests {
             serde_json::json!(["u8:A", "u8:East"])
         );
         assert_schema_valid(&refusal);
+    }
+
+    fn inline_file(content: &str, filename: &str) -> FileInput {
+        FileInput::InlineBase64 {
+            content_b64: BASE64.encode(content),
+            filename: Some(filename.to_string()),
+        }
+    }
+
+    fn hosted_request(old: &str, new: &str, profile: &str) -> RvlRequest {
+        RvlRequest {
+            old: inline_file(old, "old.csv"),
+            new: inline_file(new, "new.csv"),
+            profile: Some(inline_file(profile, "profile.yaml")),
+            key: None,
+            threshold: 0.95,
+            tolerance: 1e-9,
+            delimiter: None,
+            explicit: false,
+        }
+    }
+
+    fn run_context() -> RunContext {
+        RunContext {
+            auth_header: None,
+            client: reqwest::Client::new(),
+            config: HostConfig {
+                bind: "127.0.0.1".to_string(),
+                port: 0,
+                api_token: None,
+                allowed_origins: Vec::new(),
+                max_body_bytes: 1024 * 1024,
+                kovrex_file_api: "http://127.0.0.1:1".to_string(),
+            },
+        }
+    }
+
+    async fn run_hosted(request: RvlRequest) -> (StatusCode, Value) {
+        let response = RvlHost
+            .run(request, run_context())
+            .await
+            .expect("hosted rvl run")
+            .into_response();
+        let status = response.status();
+        let body = to_bytes(response.into_body(), usize::MAX)
+            .await
+            .expect("hosted response body");
+        let value = serde_json::from_slice(&body).expect("hosted response JSON");
+        (status, value)
+    }
+
+    #[test]
+    fn request_contract_accepts_profile_artifacts_and_rejects_profile_ids() {
+        let request = serde_json::json!({
+            "old": {"kind": "inline_base64", "content_b64": "YQ=="},
+            "new": {"kind": "inline_base64", "content_b64": "Yg=="},
+            "profile": {"kind": "inline_base64", "content_b64": "Yw=="},
+            "key": "id",
+            "threshold": 0.9,
+            "tolerance": 0.0,
+            "delimiter": "comma",
+            "explicit": true
+        });
+        serde_json::from_value::<RvlRequest>(request).expect("advertised fields must deserialize");
+
+        let unsupported = serde_json::json!({
+            "old": {"kind": "inline_base64", "content_b64": "YQ=="},
+            "new": {"kind": "inline_base64", "content_b64": "Yg=="},
+            "profile_id": "host-filesystem-profile"
+        });
+        assert!(serde_json::from_value::<RvlRequest>(unsupported).is_err());
+    }
+
+    #[tokio::test]
+    async fn hosted_composite_profile_aligns_rows() {
+        let request = hosted_request(
+            "unit_id,building,amount\nA,East,100\nA,West,200\n",
+            "unit_id,building,amount\nA,West,250\nA,East,100\n",
+            PROFILE,
+        );
+        let (status, output) = run_hosted(request).await;
+
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(output["outcome"], "REAL_CHANGE");
+        assert_eq!(output["files"]["old"], "old.csv");
+        assert_eq!(output["files"]["new"], "new.csv");
+        assert_eq!(
+            output["alignment"]["key_columns"],
+            serde_json::json!(["u8:unit_id", "u8:building"])
+        );
+        assert_eq!(
+            output["contributors"][0]["row_key"],
+            serde_json::json!(["u8:A", "u8:West"])
+        );
+        assert_schema_valid(&output);
+    }
+
+    #[tokio::test]
+    async fn hosted_composite_profile_reports_missing_component() {
+        let request = hosted_request(
+            "unit_id,amount\nA,100\n",
+            "unit_id,amount\nA,110\n",
+            PROFILE,
+        );
+        let (status, output) = run_hosted(request).await;
+
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(output["outcome"], "REFUSAL");
+        assert_eq!(output["refusal"]["code"], "E_NO_KEY");
+        assert_eq!(output["refusal"]["detail"]["key_column"], "u8:building");
+        assert_schema_valid(&output);
+    }
+
+    #[tokio::test]
+    async fn hosted_composite_profile_reports_duplicate_tuple() {
+        let request = hosted_request(
+            "unit_id,building,amount\nA,East,100\nA,East,200\n",
+            "unit_id,building,amount\nA,East,100\nA,West,200\n",
+            PROFILE,
+        );
+        let (status, output) = run_hosted(request).await;
+
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(output["outcome"], "REFUSAL");
+        assert_eq!(output["refusal"]["code"], "E_KEY_DUP");
+        assert_eq!(
+            output["refusal"]["detail"]["key_values"],
+            serde_json::json!(["u8:A", "u8:East"])
+        );
+        assert_schema_valid(&output);
+    }
+
+    #[tokio::test]
+    async fn hosted_key_and_profile_key_use_rvl_refusal_contract() {
+        let mut request = hosted_request(
+            "unit_id,building,amount\nA,East,100\n",
+            "unit_id,building,amount\nA,East,110\n",
+            PROFILE,
+        );
+        request.key = Some("unit_id".to_string());
+        let (status, output) = run_hosted(request).await;
+
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(output["outcome"], "REFUSAL");
+        assert_eq!(output["refusal"]["code"], "E_KEY_CONFLICT");
+        assert_schema_valid(&output);
     }
 }
