@@ -92,10 +92,16 @@ runtime remain available.
 The authorized Route 53 zone inventory contains neither hostname. The
 documented AWS account's `us-east-1` Lightsail inventory has no instances or
 static IPs; CloudFront aliases and ACM certificate primary names contain no
-matching domains. These bounded reads do not establish that every historical
-deployment has been removed. Railway inventory requires a current login and
-has not been verified. Full provider retirement remains tracked in
-cmdrvl-website `bd-ubll.14`.
+matching domains. The remaining `hosted-operators-main` Lightsail key-pair
+record was deleted with operator approval on 2026-11-02; the follow-up
+inventory returned no matching record.
+
+The authenticated Railway dashboard showed one project with the offline
+`rvl-kovrex` service, an expired trial, no payment method and no billing
+history. The operator completed Railway's permanent account deletion on
+2026-11-02. The browser returned to the signed-out homepage and the former
+project URL returned 404. The bounded observations and retirement record
+are retained in cmdrvl-website `bd-ubll.14`.
 
 ## Historical Railway deployment
 

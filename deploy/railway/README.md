@@ -2,10 +2,11 @@
 
 Historical configuration, not an active recommendation. The CMD+RVL `rvl`
 and `shape` hosted domain targets were retired on 2026-11-02. Do not create
-replacement public services from these instructions. Existing Railway
-resources and integration consumers still need an authenticated inventory
-before full provider retirement can be confirmed (`bd-ubll.14` in
-cmdrvl-website).
+replacement public services from these instructions. Authenticated inspection
+found only the offline `rvl-kovrex` service on an expired trial, with no
+payment method or billing history. The operator deleted the Railway account
+on 2026-11-02; the former project URL then returned 404. See the retirement
+record in `bd-ubll.14` in cmdrvl-website.
 
 This directory contains the service-specific Railway configuration for the first hosted operators:
 
