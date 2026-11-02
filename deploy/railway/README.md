@@ -1,5 +1,12 @@
 # Railway
 
+Historical configuration, not an active recommendation. The CMD+RVL `rvl`
+and `shape` hosted domain targets were retired on 2026-11-02. Do not create
+replacement public services from these instructions. Existing Railway
+resources and integration consumers still need an authenticated inventory
+before full provider retirement can be confirmed (`bd-ubll.14` in
+cmdrvl-website).
+
 This directory contains the service-specific Railway configuration for the first hosted operators:
 
 - `rvl`

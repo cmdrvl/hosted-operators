@@ -82,26 +82,42 @@ docker build --build-arg BIN_PACKAGE=host-rvl -t host-rvl .
 docker build --build-arg BIN_PACKAGE=host-shape -t host-shape .
 ```
 
-## Railway
+## Hosted domain retirement
+
+As of 2026-11-02, `rvl.cmdrvl.com` and `shape.cmdrvl.com` are retired
+deployment targets. Do not provision them or point new integrations at them.
+The open-source `rvl` and `shape` tools and this repository's local HTTP
+runtime remain available.
+
+The authorized Route 53 zone inventory contains neither hostname. The
+documented AWS account's `us-east-1` Lightsail inventory has no instances or
+static IPs; CloudFront aliases and ACM certificate primary names contain no
+matching domains. These bounded reads do not establish that every historical
+deployment has been removed. Railway inventory requires a current login and
+has not been verified. Full provider retirement remains tracked in
+cmdrvl-website `bd-ubll.14`.
+
+## Historical Railway deployment
 
 This repo now includes service-specific Railway deployment files under [`deploy/railway/README.md`](deploy/railway/README.md).
 
-Recommended setup:
+Historical setup:
 
 - Railway service `rvl` -> config file `/deploy/railway/rvl.json`
 - Railway service `shape` -> config file `/deploy/railway/shape.json`
 
 Those configs use service-specific Dockerfiles so each service builds the correct binary without relying on a dashboard-only build arg.
 
-## AWS
+## Historical AWS deployment
 
 This repo also includes a cheap single-host AWS deployment path under [`deploy/aws/README.md`](deploy/aws/README.md).
 
-Recommended setup:
+The retired setup used:
 
 - one Lightsail instance
 - one static IP
 - `rvl.cmdrvl.com`
 - `shape.cmdrvl.com`
 
-That path is designed to replace Railway as the operator origin while keeping Kovrex pointed at stable public HTTPS APIs.
+The retained deployment files describe the former topology for investigation
+and recovery. They do not establish a currently available hosted offer.

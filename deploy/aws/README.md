@@ -1,4 +1,10 @@
-# AWS
+# AWS deployment history
+
+Retired targets, 2026-11-02: `rvl.cmdrvl.com` and `shape.cmdrvl.com`.
+Do not run the provisioning, deployment or cutover commands below for these
+domains. The instructions are retained to identify historical resources;
+see the repository README for the bounded provider checks and outstanding
+Railway audit in cmdrvl-website `bd-ubll.14`. The CLI tools remain supported.
 
 Cheap direct hosting for the public CMD+RVL operators.
 
